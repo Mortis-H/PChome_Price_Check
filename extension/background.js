@@ -1,15 +1,12 @@
 const FLUSH_INTERVAL_MS = 5000;
 const MAX_BATCH = 100;
-const SETTINGS_TTL_MS = 60000;
-const DEFAULT_SETTINGS = {
+const SETTINGS = {
   useCommunity: true,
   communityBase: "https://pchome-community-low.brad0315.workers.dev",
 };
 let flushTimer = null;
 const pendingIngest = [];
 let ingestBase = "";
-let settingsCache = null;
-let settingsFetchedAt = 0;
 
 function normalizePrice(value) {
   if (value === null || value === undefined) return null;
@@ -30,29 +27,6 @@ async function fetchPrice(prodId) {
     promo: normalizePrice(price.P),
     low: normalizePrice(price.Low),
   };
-}
-
-function normalizeBase(value) {
-  if (!value) return "";
-  return value.replace(/\/+$/, "");
-}
-
-async function getSettings() {
-  const now = Date.now();
-  if (settingsCache && now - settingsFetchedAt < SETTINGS_TTL_MS) {
-    return settingsCache;
-  }
-  const stored = await new Promise((resolve) => {
-    chrome.storage.local.get("settings", resolve);
-  });
-  const settings = { ...DEFAULT_SETTINGS, ...(stored.settings || {}) };
-  settings.communityBase = normalizeBase(settings.communityBase);
-  if (settings.useCommunity && !settings.communityBase) {
-    settings.communityBase = DEFAULT_SETTINGS.communityBase;
-  }
-  settingsCache = settings;
-  settingsFetchedAt = now;
-  return settings;
 }
 
 async function fetchCommunityLow(prodId, baseUrl) {
@@ -133,7 +107,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   fetchPrice(message.prodId)
     .then(async (result) => {
-      const settings = await getSettings();
+      const settings = SETTINGS;
       const promoValue = message.promoOverride ?? result.promo;
       let communityLow = null;
       if (settings.useCommunity) {

@@ -1,13 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "PChome Lowest Price Marker",
-  "version": "0.1.0",
-  "description": "Mark items at historical low on PChome onsale and product pages.",
+  "name": "PChome 歷史最低價提示",
+  "version": "0.3.7",
+  "description": "在 PChome 24h 特賣與商品頁顯示歷史最低價與社群低價提示。",
+  "icons": {
+    "16": "icon-16.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["storage"],
-  "options_page": "options.html",
   "content_scripts": [
     {
       "matches": ["https://24h.pchome.com.tw/onsale/*"],
@@ -23,6 +26,6 @@
   "host_permissions": [
     "https://ecapi-cdn.pchome.com.tw/*",
     "https://24h.pchome.com.tw/*",
-    "https://*.workers.dev/*"
+    "https://pchome-community-low.brad0315.workers.dev/*"
   ]
 }
