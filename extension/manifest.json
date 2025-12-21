@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "PChome Lowest Price Marker",
+  "version": "0.1.0",
+  "description": "Mark items at historical low on PChome onsale and product pages.",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage"],
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": ["https://24h.pchome.com.tw/onsale/*"],
+      "js": ["content_onsale.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://24h.pchome.com.tw/prod/*"],
+      "js": ["content_product.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "https://ecapi-cdn.pchome.com.tw/*",
+    "https://24h.pchome.com.tw/*",
+    "https://*.workers.dev/*"
+  ]
+}
