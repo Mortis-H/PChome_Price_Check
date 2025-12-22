@@ -1,0 +1,9 @@
+name = "pchome-community-low"
+main = "src/worker.js"
+compatibility_date = "2024-12-15"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pchome-community-low"
+database_id = "f565d0f8-7c00-4391-ab00-7794b74b2a78"
