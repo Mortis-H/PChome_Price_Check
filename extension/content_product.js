@@ -18,32 +18,57 @@ function extractProdIdFromPath() {
 function showBanner(message, color, title) {
   const existing = document.getElementById(bannerId);
   if (existing) {
-    existing.textContent = message;
+    existing.querySelector(".msg-content").textContent = message;
     existing.style.background = color;
+    existing.style.borderColor = color;
     if (title) {
       existing.title = title;
-    } else {
-      existing.removeAttribute("title");
     }
     return;
   }
-  const banner = document.createElement("div");
-  banner.id = bannerId;
-  banner.textContent = message;
-  banner.style.position = "sticky";
-  banner.style.top = "0";
-  banner.style.zIndex = "99999";
-  banner.style.padding = "12px 16px";
-  banner.style.background = color;
-  banner.style.color = "#fff";
-  banner.style.fontSize = "14px";
-  banner.style.fontWeight = "700";
-  banner.style.textAlign = "center";
-  banner.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+
+  const toast = document.createElement("div");
+  toast.id = bannerId;
+  toast.style.position = "fixed";
+  toast.style.bottom = "20px";
+  toast.style.right = "20px";
+  toast.style.zIndex = "2147483647"; // Max z-index
+  toast.style.background = color;
+  toast.style.color = "#fff";
+  toast.style.padding = "12px 16px";
+  toast.style.borderRadius = "8px";
+  toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
+  toast.style.fontSize = "14px";
+  toast.style.fontWeight = "600";
+  toast.style.display = "flex";
+  toast.style.alignItems = "center";
+  toast.style.fontFamily = "sans-serif";
+  toast.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+  toast.style.cursor = "default";
+
+  const msgSpan = document.createElement("span");
+  msgSpan.className = "msg-content";
+  msgSpan.textContent = message;
+  toast.appendChild(msgSpan);
+
+  // Close button
+  const closeBtn = document.createElement("span");
+  closeBtn.textContent = "✕";
+  closeBtn.style.marginLeft = "12px";
+  closeBtn.style.cursor = "pointer";
+  closeBtn.style.opacity = "0.8";
+  closeBtn.onclick = () => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(10px)";
+    setTimeout(() => toast.remove(), 300);
+  };
+  toast.appendChild(closeBtn);
+
   if (title) {
-    banner.title = title;
+    toast.title = title;
   }
-  document.body.prepend(banner);
+
+  document.body.appendChild(toast);
 }
 
 let lastProdId = null;
