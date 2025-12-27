@@ -45,6 +45,7 @@ npx wrangler deploy
 ```
 
 ## 📝 版本紀錄
+- **v0.4.6**: 新增錯誤訊息詳情顯示 (Debug Mode)，當 API 失敗時顯示具體錯誤代碼 (如 HTTP 403/429)。
 - **v0.4.5**: 修復部分商品 API 回傳空值導致的 `API ERROR` 錯誤。
 - **v0.4.4**: 實作 `chrome.storage.local` 持久化儲存，解決擴充功能重啟後 Optimistic Cache 失效問題。
 - **v0.4.3**: 新增 Optimistic Cache Update 機制，立即同步本地快取，防止重複回報。

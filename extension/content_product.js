@@ -93,7 +93,8 @@ function checkProduct() {
       responded = true;
       clearTimeout(timeoutId);
       if (!resp || !resp.ok) {
-        showBanner("歷史最低價：API ERROR", "#dc2626");
+        const errorMsg = resp && resp.error ? `API ERROR: ${resp.error}` : "歷史最低價：API ERROR";
+        showBanner(errorMsg, "#dc2626");
         return;
       }
       const effectiveLow = resp.effectiveLow != null ? resp.effectiveLow : resp.low;

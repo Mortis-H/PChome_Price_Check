@@ -211,7 +211,8 @@ function scanAndCheck() {
 
 function normalizeResponse(resp, promoOverride) {
   if (!resp || !resp.ok) {
-    return { text: "LOW: API ERROR", color: "#dc2626", outline: NEUTRAL_OUTLINE };
+    const errorText = resp && resp.error ? `LOW: ${resp.error}` : "LOW: API ERROR";
+    return { text: errorText, color: "#dc2626", outline: NEUTRAL_OUTLINE };
   }
   const effectiveLow = resp.effectiveLow != null ? resp.effectiveLow : resp.low;
   if (effectiveLow == null) {
