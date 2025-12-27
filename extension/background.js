@@ -122,6 +122,14 @@ function enqueueIngest(item, baseUrl) {
   if (item.prodId && item.price != null) {
     communityCache.set(item.prodId, item.price);
     console.log(`[PChomePrice] Optimistically updated cache for ${item.prodId} to ${item.price}`);
+
+    // Persist to storage to survive SW restarts
+    chrome.storage.local.get(SNAPSHOT_KEY).then((data) => {
+      const snapshot = data[SNAPSHOT_KEY] || { prices: {} };
+      if (!snapshot.prices) snapshot.prices = {};
+      snapshot.prices[item.prodId] = item.price;
+      chrome.storage.local.set({ [SNAPSHOT_KEY]: snapshot });
+    }).catch(err => console.error("Failed to persist optimistic update", err));
   }
 
   ingestBase = baseUrl;
