@@ -116,6 +116,14 @@ function shouldEnqueue(promoValue, officialLow, communityLow) {
 
 function enqueueIngest(item, baseUrl) {
   if (!baseUrl) return;
+
+  // Optimistic update: Update local cache immediately so we don't try to ingest again
+  // for the same session.
+  if (item.prodId && item.price != null) {
+    communityCache.set(item.prodId, item.price);
+    console.log(`[PChomePrice] Optimistically updated cache for ${item.prodId} to ${item.price}`);
+  }
+
   ingestBase = baseUrl;
   pendingIngest.push(item);
   if (pendingIngest.length >= MAX_BATCH) {
