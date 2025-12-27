@@ -45,6 +45,7 @@ npx wrangler deploy
 ```
 
 ## 📝 版本紀錄
+- **v0.4.2**: 修復 Extension 端 Request Flooding 問題 (Rate Limit + Mutation Filtering)，減少非必要請求。
 - **v0.4.1**: 優化回報延遲 (5s -> 1s)，提升資料採集靈敏度。
 - **v0.4.0**: 全新後端架構 (伺服器驗證 + 安全性 + 歷史表) 與新版浮動 UI。
 - **v0.3.7**: 基礎社群比價功能。
