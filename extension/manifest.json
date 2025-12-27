@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PChome 歷史最低價提示",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "在 PChome 24h 特賣與商品頁顯示歷史最低價與社群低價提示。",
   "icons": {
     "16": "icon-16.png",

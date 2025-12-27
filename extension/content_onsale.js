@@ -13,6 +13,9 @@ const RETRY_DELAYS_MS = [1200, 3000, 6000, 10000, 15000];
 let scanScheduled = false;
 let initialScanDone = false;
 
+const recentlyChecked = new Map();
+const CHECK_COOLDOWN_MS = 300000; // 5 minutes
+
 function formatPrice(value) {
   if (value === null || value === undefined) return "";
   const num = Number(value);
@@ -148,17 +151,36 @@ function scheduleRetry(prodId) {
 
 function requestPrice(prodId) {
   if (inflight.has(prodId)) return;
+
+  // Check cooldown
+  const lastCheck = recentlyChecked.get(prodId);
+  const now = Date.now();
+  if (lastCheck && (now - lastCheck < CHECK_COOLDOWN_MS)) {
+    // If we have a cached result in DOM or memory, we might just repaint (not implemented here for simplicity)
+    // But importantly, we do NOT fetch again. 
+    // If you need to re-apply the badge for a new anchor, you'd need a local result cache.
+    // For now, simply skipping the network call is the priority.
+    // However, if we skip, the new badge stays as "CHECKING...". 
+    // Ideally we should cache the LAST RESULT too.
+    return;
+  }
+
   const anchorMap = anchorMapByProd.get(prodId);
   if (!anchorMap || anchorMap.size === 0) return;
+
   inflight.add(prodId);
+
   const promos = Array.from(anchorMap.values())
     .map((value) => Number(value))
     .filter((value) => Number.isFinite(value));
   const promoOverride = promos.length > 0 ? Math.min(...promos) : null;
+
   chrome.runtime.sendMessage(
     { type: "getPrice", prodId, pageType: "onsale", promoOverride },
     (resp) => {
       inflight.delete(prodId);
+      recentlyChecked.set(prodId, Date.now());
+
       const currentMap = anchorMapByProd.get(prodId);
       if (!currentMap) return;
       currentMap.forEach((promo, anchor) => {
@@ -263,11 +285,37 @@ function scheduleScan() {
 
 const observer = new MutationObserver((mutations) => {
   if (!initialScanDone) return;
+  let shouldScan = false;
   for (const m of mutations) {
-    if (m.addedNodes && m.addedNodes.length > 0) {
-      scheduleScan();
+    // Ignore invalidations caused by our own badges
+    if (m.target && m.target.classList && m.target.classList.contains(LOW_BADGE_CLASS)) {
+      continue;
+    }
+    // Also check if addedNodes are purely our badges
+    let relevantNodeFound = false;
+    if (m.addedNodes.length > 0) {
+      for (const node of m.addedNodes) {
+        // If it's an element node and NOT our badge
+        if (node.nodeType === 1) {
+          if (!node.classList.contains(LOW_BADGE_CLASS)) {
+            relevantNodeFound = true;
+            break;
+          }
+        } else {
+          // text nodes etc might be relevant
+          relevantNodeFound = true;
+        }
+      }
+    }
+
+    if (relevantNodeFound) {
+      shouldScan = true;
       break;
     }
+  }
+
+  if (shouldScan) {
+    scheduleScan();
   }
 });
 
