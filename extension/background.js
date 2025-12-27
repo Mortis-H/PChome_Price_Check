@@ -67,8 +67,12 @@ async function fetchPrice(prodId) {
     throw new Error(`HTTP ${resp.status}`);
   }
   const data = await resp.json();
-  const entry = Array.isArray(data) ? data[0] : null;
-  const price = entry && entry.Price ? entry.Price : {};
+  const entry = Array.isArray(data) && data.length > 0 ? data[0] : null;
+  if (!entry) {
+    // Return nulls if no data found, instead of throwing or returning empty object
+    return { promo: null, low: null };
+  }
+  const price = entry.Price ? entry.Price : {};
   return {
     promo: normalizePrice(price.P),
     low: normalizePrice(price.Low),
