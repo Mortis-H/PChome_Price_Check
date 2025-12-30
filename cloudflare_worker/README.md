@@ -34,8 +34,3 @@ wrangler deploy
 ## Debug
 `/lowest` responses include `X-Cache: HIT|MISS|BYPASS` for quick verification.
 
-## Extension
-In extension Options, enable **社群資料庫** and set the Base URL:
-```
-https://pchome-community-low.brad0315.workers.dev
-```
