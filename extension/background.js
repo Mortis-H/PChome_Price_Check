@@ -2,7 +2,7 @@ const FLUSH_INTERVAL_MS = 1000;
 const MAX_BATCH = 100;
 const SETTINGS = {
   useCommunity: true,
-  communityBase: "https://pchome-community-low.brad0315.workers.dev",
+  communityBase: "secret:)",
 };
 let flushTimer = null;
 const pendingIngest = [];
