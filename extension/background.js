@@ -12,6 +12,12 @@ let ingestBase = "";
 let communityCache = new Map();
 let isCacheReady = false;
 const SNAPSHOT_KEY = "community_snapshot";
+const LAST_SNAPSHOT_TIME_KEY = "last_snapshot_time";
+const SNAPSHOT_TTL_MS = 3600 * 1000; // 1 hour
+
+// Official Price Cache (short-term)
+const officialCache = new Map();
+const OFFICIAL_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 // Initialize cache
 (async function init() {
@@ -38,12 +44,26 @@ async function loadCache() {
 async function updateSnapshot() {
   try {
     if (!SETTINGS.useCommunity) return;
+
+    // Check if we need to update
+    const storage = await chrome.storage.local.get(LAST_SNAPSHOT_TIME_KEY);
+    const lastTime = storage[LAST_SNAPSHOT_TIME_KEY];
+    const now = Date.now();
+
+    if (lastTime && (now - lastTime < SNAPSHOT_TTL_MS)) {
+      console.log("[PChomePrice] Skipping snapshot update (cache fresh).");
+      return;
+    }
+
     const resp = await fetch(`${SETTINGS.communityBase}/snapshot`);
     if (!resp.ok) return;
     const data = await resp.json();
     if (data && data.prices) {
       // Save to storage
-      await chrome.storage.local.set({ [SNAPSHOT_KEY]: data });
+      await chrome.storage.local.set({
+        [SNAPSHOT_KEY]: data,
+        [LAST_SNAPSHOT_TIME_KEY]: now
+      });
       // Update in-memory
       communityCache = new Map(Object.entries(data.prices));
       isCacheReady = true;
@@ -61,6 +81,12 @@ function normalizePrice(value) {
 }
 
 async function fetchPrice(prodId) {
+  // Check memory cache first
+  const cached = officialCache.get(prodId);
+  if (cached && (Date.now() - cached.ts < OFFICIAL_CACHE_TTL_MS)) {
+    return cached.data;
+  }
+
   const url = `https://ecapi-cdn.pchome.com.tw/ecshop/prodapi/v2/prod/button&id=${encodeURIComponent(prodId)}`;
   const resp = await fetch(url);
   if (!resp.ok) {
@@ -68,15 +94,23 @@ async function fetchPrice(prodId) {
   }
   const data = await resp.json();
   const entry = Array.isArray(data) && data.length > 0 ? data[0] : null;
-  if (!entry) {
-    // Return nulls if no data found, instead of throwing or returning empty object
-    return { promo: null, low: null };
+
+  let result = { promo: null, low: null };
+  if (entry) {
+    const price = entry.Price ? entry.Price : {};
+    result = {
+      promo: normalizePrice(price.P),
+      low: normalizePrice(price.Low),
+    };
   }
-  const price = entry.Price ? entry.Price : {};
-  return {
-    promo: normalizePrice(price.P),
-    low: normalizePrice(price.Low),
-  };
+
+  // Cache result
+  officialCache.set(prodId, {
+    data: result,
+    ts: Date.now()
+  });
+
+  return result;
 }
 
 async function fetchCommunityLow(prodId, baseUrl) {

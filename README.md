@@ -45,6 +45,10 @@ npx wrangler deploy
 ```
 
 ## 📝 版本紀錄
+- **v0.4.8**: 效能與體驗優化更新 (Release Candidate)。
+  - **效能**: 新增背景 5 分鐘快取 (In-Memory Cache) 儲存官方價格，大幅減少對 PChome API 的重複請求。
+  - **頻寬**: 實作嚴格的 Snapshot 更新檢查，限制 1 小時內僅同步一次社群資料，節省使用者流量與 Worker 讀取額度。
+  - **體驗**: 移除特賣頁面過於激進的 Client-side Cooldown 機制，解決切換視窗後徽章卡在 "CHECKING..." 的問題。
 - **v0.4.7**: 修復因缺少 `storage` 權限導致的 `TypeError` (API ERROR)。
 - **v0.4.6**: 新增錯誤訊息詳情顯示 (Debug Mode)，當 API 失敗時顯示具體錯誤代碼 (如 HTTP 403/429)。
 - **v0.4.5**: 修復部分商品 API 回傳空值導致的 `API ERROR` 錯誤。

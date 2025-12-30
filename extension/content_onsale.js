@@ -13,9 +13,6 @@ const RETRY_DELAYS_MS = [1200, 3000, 6000, 10000, 15000];
 let scanScheduled = false;
 let initialScanDone = false;
 
-const recentlyChecked = new Map();
-const CHECK_COOLDOWN_MS = 300000; // 5 minutes
-
 function formatPrice(value) {
   if (value === null || value === undefined) return "";
   const num = Number(value);
@@ -152,19 +149,6 @@ function scheduleRetry(prodId) {
 function requestPrice(prodId) {
   if (inflight.has(prodId)) return;
 
-  // Check cooldown
-  const lastCheck = recentlyChecked.get(prodId);
-  const now = Date.now();
-  if (lastCheck && (now - lastCheck < CHECK_COOLDOWN_MS)) {
-    // If we have a cached result in DOM or memory, we might just repaint (not implemented here for simplicity)
-    // But importantly, we do NOT fetch again. 
-    // If you need to re-apply the badge for a new anchor, you'd need a local result cache.
-    // For now, simply skipping the network call is the priority.
-    // However, if we skip, the new badge stays as "CHECKING...". 
-    // Ideally we should cache the LAST RESULT too.
-    return;
-  }
-
   const anchorMap = anchorMapByProd.get(prodId);
   if (!anchorMap || anchorMap.size === 0) return;
 
@@ -179,7 +163,6 @@ function requestPrice(prodId) {
     { type: "getPrice", prodId, pageType: "onsale", promoOverride },
     (resp) => {
       inflight.delete(prodId);
-      recentlyChecked.set(prodId, Date.now());
 
       const currentMap = anchorMapByProd.get(prodId);
       if (!currentMap) return;
